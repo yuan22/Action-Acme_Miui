@@ -30,20 +30,20 @@ jobs:
       
       - name: 开始下载官方包...
         run: |
-          cd $GITHUB_WORKSPACE/Acme_Miui/
+          cd $GITHUB_WORKSPACE/
           mkdir ./official
           mkdir ./output
           aria2c -s 30 -x 6 -d offical -i url.txt --file-allocation=falloc  -V true -c true
           
       - name: 开始制作官改包...
         run: |
-          cd $GITHUB_WORKSPACE/Acme_Miui/
+          cd $GITHUB_WORKSPACE/
           bash Acme_Miui.sh
           
       - name: 上传至Release...
         uses: ncipollo/release-action@v1.8.6
         with:
-          artifacts: ${{ github.workspace }}/Acme_Miui/outputzip/*
+          artifacts: ${{ github.workspace }}/output/*
           name: TestBuild-1
           tag: TestBuild-1
           body: "TestBuild"
