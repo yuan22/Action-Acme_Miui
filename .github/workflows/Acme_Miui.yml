@@ -1,0 +1,51 @@
+name: Acme_Miui
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: 获取本仓库源码...
+        uses: actions/checkout@main
+
+      - name: 清理环境...
+        run: |
+          sudo rm -rf /etc/apt/sources.list.d
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+          sudo -E apt-get update
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          df -h
+
+      - name: 配置环境...
+        run: |
+          sudo -E apt-get install -y git wget git zip unzip curl axel
+          sudo -E apt-get install python3 python3-pip default-jre aria2 -y
+          sudo -E apt update --fix-missing
+          pip install protobuf
+          echo "BUILD_TIME=$(date +"%Y%m%d")" >> $GITHUB_ENV
+      
+      - name: 开始下载官方包...
+        run: |
+          cd $GITHUB_WORKSPACE/Acme_Miui/
+          mkdir ./official
+          mkdir ./output
+          aria2c -s 30 -x 6 -d offical -i url.txt --file-allocation=falloc  -V true -c true
+          
+      - name: 开始制作官改包...
+        run: |
+          cd $GITHUB_WORKSPACE/Acme_Miui/
+          bash Acme_Miui.sh
+          
+      - name: 上传至Release...
+        uses: ncipollo/release-action@v1.8.6
+        with:
+          artifacts: ${{ github.workspace }}/Acme_Miui/outputzip/*
+          name: TestBuild-1
+          tag: TestBuild-1
+          body: "TestBuild"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
